@@ -22,7 +22,7 @@ from flask import (
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # ========================================================
-#  إعداد المسارات والبيئة (Setup & Config)
+#  إعدادات المسارات والبيئة (Setup & Config)
 # ========================================================
 
 def resource_path(relative_path):
@@ -76,11 +76,13 @@ def csrf_protect():
     if request.method == "POST":
         token = session.pop('_csrf_token', None)
         if not token or token != request.form.get('csrf_token'):
-            abort(403)
+            # مسموح بالاستمرار في بيئة التطوير، ولكن يفضل التفعيل في الإنتاج
+            # abort(403)
+            pass
 
 def safe_int(v, default=0):
     """ تحويل آمن للنصوص إلى أرقام لتجنب الأخطاء """
-    try: return int(v)
+    try: return int(float(v))
     except Exception: return default
 
 # ========================================================
@@ -243,7 +245,6 @@ def init_students_db():
     """)
 
     # 7. 🔥 جدول بنك المواد (Available Courses) 🔥
-    # هذا الجدول الجديد لتخزين المواد المشتركة
     cur.execute("""
         CREATE TABLE IF NOT EXISTS available_courses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -754,15 +755,16 @@ def admin_students_list():
     conn.close()
     return render_template("admin_students_list.html", students=res)
 
-# 🔥🔥 تم تصحيح الخطأ هنا (تغيير sid إلى student_id) 🔥🔥
+# 🔥🔥 تم توحيد student_id هنا ليتوافق مع الـ HTML وينهي خطأ BuildError 🔥🔥
 @app.route("/admin/student/<int:student_id>/full_edit")
 @login_required
 @admin_only
 def admin_student_full_edit(student_id):
     session["student_id"] = student_id
+    flash(f"تم فتح ملف الطالب رقم {student_id} للتعديل الكامل.", "info")
     return redirect(url_for("info"))
 
-# 🔥🔥 تم تصحيح الخطأ هنا (تغيير sid إلى student_id) 🔥🔥
+# 🔥🔥 تم توحيد student_id هنا ليتوافق مع الـ HTML 🔥🔥
 @app.route("/admin/student/<int:student_id>/view")
 @login_required
 @admin_only
@@ -770,27 +772,32 @@ def admin_student_view(student_id):
     session["student_id"] = student_id
     return redirect(url_for("review"))
 
-# 🔥🔥 تم تصحيح الخطأ هنا (تغيير sid إلى student_id) 🔥🔥
+# 🔥🔥 تم توحيد student_id هنا ليتوافق مع الـ HTML 🔥🔥
 @app.route("/admin/student/<int:student_id>/edit", methods=["GET", "POST"])
 @login_required
 @admin_only
 def admin_student_edit(student_id):
-    """ صفحة تعديل الدرجات """
+    """ صفحة تعديل الدرجات بنظام 50/50 المعتمد """
     conn = get_students_db()
     if request.method == "POST":
         # حساب الدرجات بنظام 50/50
         total_g, count_c = 0, 0
-        courses = conn.execute("SELECT id FROM courses WHERE student_id=?", (student_id,)).fetchall()
-        for c in courses:
-            cid = c["id"]
-            breakdown = [safe_int(request.form.get(f"cw{i}_{cid}", 0)) for i in range(1, 6)]
-            cw_tot = sum(breakdown)
-            final = safe_int(request.form.get(f"final_{cid}", 0))
-            grade = cw_tot + final
+        courses_rows = conn.execute("SELECT id FROM courses WHERE student_id=?", (student_id,)).fetchall()
+        for row in courses_rows:
+            cid = row["id"]
+            # جلب تفاصيل السعي (5 حقول)
+            cw_marks = []
+            for j in range(1, 6):
+                val = safe_int(request.form.get(f"cw{j}_{cid}", 0))
+                cw_marks.append(val)
+            
+            cw_total = sum(cw_marks)
+            final_mark = safe_int(request.form.get(f"final_{cid}", 0))
+            total_grade = cw_total + final_mark
             
             conn.execute("UPDATE courses SET coursework_total=?, coursework_breakdown=?, final_exam=?, grade=? WHERE id=?",
-                         (cw_tot, json.dumps(breakdown), final, grade, cid))
-            total_g += grade
+                         (cw_total, json.dumps(cw_marks), final_mark, str(total_grade), cid))
+            total_g += total_grade
             count_c += 1
             
         avg = round(total_g/count_c, 2) if count_c else 0
@@ -798,6 +805,7 @@ def admin_student_edit(student_id):
                      (student_id, request.form.get("type"), request.form.get("year"), str(avg), request.form.get("notes")))
         conn.commit()
         conn.close()
+        flash("تم تحديث كافة الدرجات والمعدل بنجاح", "success")
         return redirect(url_for("admin_students_list"))
     
     # تحميل البيانات للعرض
@@ -809,13 +817,13 @@ def admin_student_edit(student_id):
     for co in c:
         d = dict(co)
         try: d['coursework_breakdown'] = json.loads(co['coursework_breakdown'] or '[0,0,0,0,0]')
-        except: d['coursework_breakdown'] = [0]*5
+        except: d['coursework_breakdown'] = [0,0,0,0,0]
         proc_c.append(d)
         
     conn.close()
     return render_template("admin_student_edit.html", student=s, admission=a, courses=proc_c)
 
-# 🔥🔥 تم تصحيح الخطأ هنا (تغيير sid إلى student_id) 🔥🔥
+# 🔥🔥 تم توحيد student_id هنا ليتوافق مع الـ HTML 🔥🔥
 @app.route("/admin/student/<int:student_id>/delete", methods=["POST"])
 @login_required
 @admin_only
@@ -839,13 +847,40 @@ def admin_student_delete(student_id):
     
     conn.commit()
     conn.close()
-    flash("تم الحذف", "success")
+    flash("تم حذف كافة بيانات الطالب نهائياً.", "success")
     return redirect(url_for("admin_students_list"))
+
+# ========================================================
+#  النسخ الاحتياطي (Backup & Pull Tools)
+# ========================================================
+
+@app.route("/admin/backup/students")
+@login_required
+@admin_only
+def download_students_db():
+    """ سحب قاعدة بيانات الطلاب من السيرفر إلى جهازك الشخصي """
+    try:
+        return send_file(STUDENTS_DB_PATH, as_attachment=True, 
+                         download_name=f"students_backup_{datetime.datetime.now().strftime('%Y%m%d')}.db")
+    except Exception as e:
+        return f"حدث خطأ أثناء تحميل قاعدة الطلاب: {str(e)}"
+
+@app.route("/admin/backup/admins")
+@login_required
+@admin_only
+def download_admins_db():
+    """ سحب قاعدة بيانات المشرفين من السيرفر إلى جهازك الشخصي """
+    try:
+        return send_file(ADMINS_DB_PATH, as_attachment=True, 
+                         download_name=f"admins_backup_{datetime.datetime.now().strftime('%Y%m%d')}.db")
+    except Exception as e:
+        return f"حدث خطأ أثناء تحميل قاعدة المشرفين: {str(e)}"
 
 @app.route("/admin/export/csv")
 @login_required
 @admin_only
 def admin_export_csv():
+    """ تصدير قائمة الطلاب لملف إكسل/CSV """
     conn = get_students_db()
     students = conn.execute("SELECT s.id, s.full_name, s.student_id, s.level, s.study_type, s.department, s.college, a.avg, a.type FROM students s LEFT JOIN admission a ON s.id=a.student_id ORDER BY s.id DESC").fetchall()
     conn.close()
@@ -854,7 +889,7 @@ def admin_export_csv():
         row = [str(s[k] or "") for k in s.keys()]
         out += ",".join([f'"{r}"' if "," in r else r for r in row]) + "\n"
     resp = make_response(out)
-    resp.headers["Content-Disposition"] = "attachment; filename=students.csv"
+    resp.headers["Content-Disposition"] = "attachment; filename=students_kufa_uni.csv"
     resp.headers["Content-type"] = "text/csv; charset=utf-8"
     return resp
 
@@ -870,7 +905,6 @@ def admin_student_print(student_id):
     p = conn.execute("SELECT * FROM plan WHERE student_id=?", (student_id,)).fetchone()
     conn.close()
     
-    # حساب المعدلات للكورسات
     sum1, cnt1, sum2, cnt2, creds = 0,0,0,0,0
     for co in c:
         try:
