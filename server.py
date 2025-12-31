@@ -249,15 +249,19 @@ def safe_int(v, default=0):
     except Exception: return default
 
 # =========================
+# FAVICON ROUTE (NEW) 🔥
+# =========================
+@app.route('/favicon.ico')
+def favicon():
+    # يبحث عن الصورة في static/ku.ico ويعرضها كأيقونة
+    return send_file(os.path.join(app.static_folder, 'ku.ico'), mimetype='image/vnd.microsoft.icon')
+
+# =========================
 # Auth routes
 # =========================
 @app.route("/")
 def home():
-    if "user" in session:
-        if session["user"]["role"] == "student":
-            return redirect(url_for("student_portal"))
-        else:
-            return redirect(url_for("dashboard"))
+    # 🔥 التوجيه المباشر لصفحة تسجيل الدخول
     return redirect(url_for("login"))
 
 @app.route("/login", methods=["GET", "POST"])
@@ -315,14 +319,12 @@ def logout():
 @app.route("/my_portal")
 @login_required
 def student_portal():
-    # حماية: التأكد أن المستخدم طالب
     if session["user"].get("role") != "student":
         return redirect(url_for("dashboard"))
 
     student_db_id = session["user"]["db_id"]
     conn = get_students_db()
     
-    # جلب معلومات الطالب
     student_info = conn.execute("SELECT full_name, student_id, college, department FROM students WHERE id=?", (student_db_id,)).fetchone()
     
     # جلب المواد
@@ -905,6 +907,11 @@ def forbidden(e): return render_template("403.html"), 403
 def page_not_found(e): return render_template("404.html"), 404
 @app.route("/_health")
 def health(): return {"ok": True}
+
+@app.route("/reset")
+def reset():
+    session.pop("student_id", None)
+    return redirect(url_for("info"))
 
 if __name__ == "__main__":
     app.run(debug=True)
