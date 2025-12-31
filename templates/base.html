@@ -33,7 +33,8 @@
                 
                 <a href="{{ url_for('research_registry') }}">📚 سجل البحوث</a>
 
-                <a href="{{ url_for('info') }}" class="btn-new">➕ تسجيل طالب جديد</a>
+                <a href="{{ url_for('reset') }}" class="btn-new">➕ تسجيل طالب جديد</a>
+
             {% else %}
                 <a href="{{ url_for('login') }}">🔐 تسجيل الدخول</a>
             {% endif %}

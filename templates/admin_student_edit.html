@@ -1,4 +1,7 @@
 {% extends "base.html" %}
+
+{% block title %}تعديل درجات الطالب{% endblock %}
+
 {% block content %}
 
 <section class="card form-container" style="max-width: 1200px;">
@@ -67,16 +70,16 @@
                                 {% for i in range(5) %}
                                 {% set cw_value = c.coursework_breakdown[i] if c.coursework_breakdown|length > i else '' %}
                                 <input type="number" name="cw{{ i+1 }}_{{ c.id }}" 
-                                    value="{{ cw_value | float if cw_value != '' and cw_value is not none else '' }}"
-                                    placeholder="0" min="0" max="50" step="0.5" class="cw-input small-input">
+                                    value="{{ cw_value | int if cw_value != '' and cw_value is not none else '' }}"
+                                    placeholder="0" min="0" max="50" class="cw-input small-input">
                                 {% endfor %}
                             </div>
                         </td>
 
                         <td class="grade-input-cell">
                             <input type="number" name="final_{{ c.id }}"
-                                value="{{ c.final_exam | float if c.final_exam else '' }}" 
-                                placeholder="50" min="0" max="50" step="0.5" class="small-input">
+                                value="{{ c.final_exam | int if c.final_exam else '' }}" 
+                                placeholder="50" min="0" max="50" class="small-input">
                         </td>
 
                         <td class="total-grade-cell">

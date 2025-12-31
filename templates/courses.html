@@ -44,14 +44,20 @@
 
     <h3 class="section-heading">إضافة مواد جديدة</h3>
     
+    <datalist id="courses-list">
+        {% for ac in available_courses %}
+            <option value="{{ ac.course_name }}" data-credits="{{ ac.default_credits }}"></option>
+        {% endfor %}
+    </datalist>
+
     <form method="POST" id="courses-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         
         <div id="course-fields">
             <div class="course-row">
                 <div class="input-box" style="flex: 3;">
-                    <label>اسم المادة</label>
-                    <input type="text" name="course_name[]" placeholder="اسم المادة">
+                    <label>اسم المادة (اختر أو اكتب جديد)</label>
+                    <input type="text" name="course_name[]" list="courses-list" placeholder="ابحث عن مادة..." onchange="autoFillCredits(this)">
                 </div>
 
                 <div class="input-box" style="flex: 2;">
@@ -65,7 +71,7 @@
 
                 <div class="input-box" style="flex: 1;">
                     <label>الوحدات</label>
-                    <input type="number" name="course_units[]" placeholder="وحدة" min="1">
+                    <input type="number" name="course_units[]" class="credits-input" placeholder="وحدة" min="1">
                 </div>
                 <button type="button" class="remove-btn" onclick="removeRow(this)" style="display:none; height: 40px; margin-top: 25px;">حذف</button>
             </div>
@@ -81,14 +87,35 @@
 </div>
 
 <script>
-    // JavaScript لإضافة صف جديد للمادة
+    // دالة الملء التلقائي للوحدات عند اختيار مادة
+    function autoFillCredits(input) {
+        const val = input.value;
+        const list = document.getElementById('courses-list');
+        const options = list.options;
+        
+        for (let i = 0; i < options.length; i++) {
+            if (options[i].value === val) {
+                // العثور على الحقل المجاور للوحدات
+                const row = input.closest('.course-row');
+                const creditsInput = row.querySelector('.credits-input');
+                const credits = options[i].getAttribute('data-credits');
+                if (credits && creditsInput) {
+                    creditsInput.value = credits;
+                }
+                break;
+            }
+        }
+    }
+
     function addRow() {
         const fields = document.getElementById('course-fields');
         const newRow = document.createElement('div');
         newRow.className = 'course-row';
+        
+        // نفس الـ HTML لكن مع إضافة دالة autoFillCredits
         newRow.innerHTML = `
             <div class="input-box" style="flex: 3;">
-                <input type="text" name="course_name[]" placeholder="اسم المادة" required>
+                <input type="text" name="course_name[]" list="courses-list" placeholder="ابحث عن مادة..." onchange="autoFillCredits(this)" required>
             </div>
             <div class="input-box" style="flex: 2;">
                 <select name="course_term[]">
@@ -98,7 +125,7 @@
                 </select>
             </div>
             <div class="input-box" style="flex: 1;">
-                <input type="number" name="course_units[]" placeholder="وحدة" min="1" required>
+                <input type="number" name="course_units[]" class="credits-input" placeholder="وحدة" min="1" required>
             </div>
             <button type="button" class="remove-btn" onclick="removeRow(this)" style="height: 40px; margin-top: 25px;">حذف</button>
         `;
@@ -106,16 +133,14 @@
     }
 
     function removeRow(btn) {
-        // تأكد من عدم حذف جميع الصفوف
         const fields = document.getElementById('course-fields');
         if (fields.childElementCount > 1) {
             btn.parentElement.remove();
         } else {
-            alert('لا يمكن حذف جميع الصفوف. يجب ترك صف واحد على الأقل.');
+            alert('يجب ترك صف واحد على الأقل.');
         }
     }
     
-    // عند تحميل الصفحة، إذا كان هناك صفوف، اجعل زر الحذف يظهر للصفوف التي تم إنشاؤها يدوياً
     document.addEventListener('DOMContentLoaded', function() {
         const rows = document.getElementById('course-fields').children;
         if (rows.length > 1) {
