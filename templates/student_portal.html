@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة الطالب | نظام المقررات</title>
+    
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='ku.ico') }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='ku.ico') }}">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=10">
+
+    <style>
+        body { background-color: #050e14 !important; color: #fff !important; }
+        .text-neon { color: #00ff9d !important; text-shadow: 0 0 10px rgba(0, 255, 157, 0.3); }
+        .text-white-muted { color: #b0f2d9 !important; opacity: 0.7; }
+        
+        /* تصميم الكرت الزجاجي */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(0, 255, 157, 0.15);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            margin-bottom: 20px;
+            transition: 0.3s;
+            overflow: hidden;
+        }
+        .glass-card:hover {
+            border-color: #00ff9d;
+            box-shadow: 0 5px 25px rgba(0, 255, 157, 0.1);
+        }
+
+        /* حاوية شريط بولونيا */
+        .bologna-strip {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 25px 15px;
+            border-radius: 15px;
+            border: 1px dashed rgba(0, 255, 157, 0.2);
+            margin-top: 15px;
+        }
+
+        .component-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .component-label {
+            font-size: 0.75rem;
+            color: #b0f2d9;
+            margin-bottom: 8px;
+            text-align: center;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.2;
+            opacity: 0.8;
+        }
+
+        .component-box {
+            width: 50px;
+            height: 50px;
+            line-height: 48px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: 0.2s;
+        }
+        .component-wrapper:hover .component-box {
+            border-color: #00ff9d;
+            background: rgba(0, 255, 157, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .math-symbol {
+            color: #555;
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding-bottom: 10px;
+        }
+
+        .total-wrapper .component-label {
+            color: #00ff9d;
+            font-weight: bold;
+        }
+        .total-coursework-box {
+            width: 70px;
+            height: 70px;
+            line-height: 66px;
+            text-align: center;
+            border: 2px solid #00ff9d;
+            background: rgba(0, 255, 157, 0.1);
+            color: #00ff9d;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 1.6rem;
+            box-shadow: 0 0 20px rgba(0, 255, 157, 0.2);
+            text-shadow: 0 0 10px rgba(0, 255, 157, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-glow-line"></div>
+
+    <div class="student-header text-center">
+        <div class="container">
+            
+            <img src="{{ url_for('static', filename='ku.ico') }}" alt="Logo" width="110" class="mb-4" 
+                 style="filter: drop-shadow(0 0 15px rgba(0,255,157,0.3));">
+
+            <h2 class="fw-bold mb-2 text-white">{{ student['full_name'] }}</h2>
+            <p class="fs-5 mb-1 text-white-muted">{{ student['college'] }} | {{ student['department'] }}</p>
+            <p class="mb-4 text-white-muted">
+                الرقم الجامعي: <span class="fw-bold text-neon" style="font-family: monospace; font-size: 1.2em;">{{ student['student_id'] }}</span>
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+                <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#passwordModal"
+                        style="background: transparent; border: 1px solid #00ff9d; color: #00ff9d;">
+                    🔒 تغيير كلمة المرور
+                </button>
+                <a href="{{ url_for('logout') }}" class="btn" 
+                   style="background: rgba(255, 79, 94, 0.1); border: 1px solid #ff4f5e; color: #ff4f5e;">
+                    خروج
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container pb-5" style="max-width: 1000px;">
+        <h3 class="section-heading text-end" style="color: #00ff9d; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            📊 تفاصيل السعي ونظام بولونيا
+        </h3>
+        
+        {% if courses %}
+            {% set labels = [
+                'الاختبارات<br>Quizzes', 
+                'الواجبات<br>Assignments', 
+                'التقارير<br>Reports', 
+                'الندوات<br>Seminars', 
+                'نصف الفصل<br>Midterm'
+            ] %}
+
+            {% for course in courses %}
+            <div class="glass-card" onclick="toggleGrade(this)" style="cursor: pointer;">
+                
+                <div class="p-4 d-flex justify-content-between align-items-center">
+                    <div class="text-end">
+                        <h5 class="mb-1 fw-bold text-neon" style="font-size: 1.3rem;">{{ course['course_name'] }}</h5>
+                        <span class="badge" style="background: rgba(255,255,255,0.1); border: 1px solid #555;">
+                            {{ course['semester'] }}
+                        </span>
+                    </div>
+                    <span class="expand-icon" style="color: #00cc7a;">▼ عرض التقييم</span>
+                </div>
+                
+                <div class="grade-details" style="display: none; padding: 0 25px 30px 25px;">
+                    <hr style="border-color: rgba(255,255,255,0.1);">
+                    
+                    <div class="text-center mb-2">
+                        <span class="text-white-muted small">تفاصيل التقييم التكويني (Formative Assessment)</span>
+                    </div>
+
+                    <div class="bologna-strip">
+                        
+                        {% if course['coursework_breakdown'] %}
+                            {% for mark in course['coursework_breakdown'] %}
+                                <div class="component-wrapper">
+                                    <span class="component-label">
+                                        {{ labels[loop.index0] | safe if loop.index0 < 5 else 'أخرى' }}
+                                    </span>
+                                    <div class="component-box">{{ mark }}</div>
+                                </div>
+
+                                {% if not loop.last %}
+                                    <div class="math-symbol">+</div>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-muted">لا توجد تفاصيل مدخلة</span>
+                        {% endif %}
+
+                        <div class="math-symbol" style="margin: 0 15px; color: #00ff9d;">➜</div>
+                        
+                        <div class="component-wrapper total-wrapper">
+                            <span class="component-label">مجموع السعي<br>Total</span>
+                            <div class="total-coursework-box">{{ course['coursework_total'] }}</div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4 pt-3 text-center" style="border-top: 1px solid rgba(255,255,255,0.05);">
+                        <div class="col-6 border-start" style="border-color: rgba(255,255,255,0.1) !important;">
+                            <small class="d-block text-white-muted">الامتحان النهائي (Final)</small>
+                            <span class="fs-4 fw-bold text-white">{{ course['final_exam'] }}</span>
+                        </div>
+                        <div class="col-6">
+                            <small class="d-block text-white-muted">الدرجة النهائية (Grade)</small>
+                            {% set grade_val = course['grade']|int %}
+                            <span class="fs-3 fw-bold" style="color: {{ '#2ecc71' if grade_val >= 50 else '#ff4f5e' }};">
+                                {{ course['grade'] }}
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="glass-card text-center py-5">
+                <h5 class="text-white-muted">لا توجد مواد مسجلة.</h5>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="modal fade" id="passwordModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background-color: #02080c; border: 1px solid #00ff9d; box-shadow: 0 0 30px rgba(0,255,157,0.2);">
+                <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <h5 class="modal-title text-neon">تغيير كلمة المرور</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ url_for('student_change_password') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="modal-body p-4 text-end">
+                        <div class="mb-3">
+                            <label class="form-label text-white-muted">كلمة المرور الحالية</label>
+                            <input type="password" name="old_password" class="form-control" required 
+                                   style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-white-muted">كلمة المرور الجديدة</label>
+                            <input type="password" name="new_password" class="form-control" required minlength="6" 
+                                   style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                        <button type="button" class="btn" data-bs-dismiss="modal" style="color: #888;">إلغاء</button>
+                        <button type="submit" class="btn" style="background: #00ff9d; color: #000; font-weight: bold;">حفظ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleGrade(card) {
+            const gradeBox = card.querySelector('.grade-details');
+            const icon = card.querySelector('.expand-icon');
+            
+            if (gradeBox.style.display === "block") {
+                gradeBox.style.display = "none";
+                icon.innerText = "▼ عرض التقييم";
+                card.style.borderColor = "rgba(0, 255, 157, 0.15)";
+            } else {
+                document.querySelectorAll('.grade-details').forEach(box => box.style.display = 'none');
+                document.querySelectorAll('.expand-icon').forEach(i => i.innerText = "▼ عرض التقييم");
+                document.querySelectorAll('.glass-card').forEach(c => c.style.borderColor = "rgba(0, 255, 157, 0.15)");
+                
+                gradeBox.style.display = "block";
+                gradeBox.animate([{ opacity: 0, transform: 'translateY(-10px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 300 });
+                icon.innerText = "▲ إخفاء";
+                card.style.borderColor = "#00ff9d";
+            }
+        }
+    </script>
+</body>
+</html>

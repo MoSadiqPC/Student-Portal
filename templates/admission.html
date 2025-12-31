@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% include 'student_steps.html' %}
+
+<section class="card form-container">
+    <h2 class="glow-title">القسم الثاني: بيانات القبول</h2>
+
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="input-box">
+            <label>نوع القبول</label>
+            <select name="type" required>
+                {% set current_type = data.type if data and data.type else '' %}
+                <option value="" disabled {% if not current_type %}selected{% endif %}>اختر...</option>
+                <option value="عام" {% if current_type == 'عام' %}selected{% endif %}>عام</option>
+                <option value="خاص" {% if current_type == 'خاص' %}selected{% endif %}>خاص</option>
+            </select>
+        </div>
+
+        <div class="input-box">
+            <label>سنة القبول</label>
+            <input type="text" name="year" value="{{ data.year if data and data.year else '2025' }}" required>
+        </div>
+
+        <div class="input-box">
+            <label>المعدل</label>
+            <input type="text" name="avg" value="{{ data.avg if data and data.avg else '' }}" required>
+        </div>
+
+        <div class="input-box">
+            <label>ملاحظات</label>
+            <input type="text" name="notes" value="{{ data.notes if data and data.notes else '' }}">
+        </div>
+
+        <div class="btn-box form-actions">
+            <a href="{{ url_for('info') }}" class="back-btn">رجوع</a>
+            <button type="submit" class="next-btn">التالي</button>
+        </div>
+
+    </form>
+</section>
+
+{% endblock %}

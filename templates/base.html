@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة الدراسات العليا - جامعة الكوفة</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="{{ url_for('static', filename='ku.ico') }}" type="image/x-icon">
+</head>
+<body class="dark-mode">
+
+    <div class="top-glow-line"></div>
+
+    <button class="theme-btn" id="themeToggle" title="تغيير المظهر">
+        🌙
+    </button>
+
+    <div class="sidebar">
+        <img src="{{ url_for('static', filename='ku.png') }}" alt="Logo" class="logo">
+        <h3>جامعة الكوفة</h3>
+        <p>قسم علوم الحاسوب والرياضيات</p>
+
+        <div class="menu">
+            {% if session.get('user') %}
+                <a href="{{ url_for('dashboard') }}">📊 الإحصائيات</a>
+                
+                {% if session['user']['role'] == 'super' %}
+                    <a href="{{ url_for('admins') }}">🛡️ إدارة المشرفين</a>
+                {% endif %}
+
+                <a href="{{ url_for('admin_students_list') }}">👥 إدارة الطلاب</a>
+                
+                <a href="{{ url_for('research_registry') }}">📚 سجل البحوث</a>
+
+                <a href="{{ url_for('reset') }}" class="btn-new">➕ تسجيل طالب جديد</a>
+
+            {% else %}
+                <a href="{{ url_for('login') }}">🔐 تسجيل الدخول</a>
+            {% endif %}
+
+            {% if session.get('user') %}
+                <a href="{{ url_for('logout') }}" class="logout-btn">🚪 تسجيل خروج</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-container">
+                    {% for category, message in messages %}
+                        <div class="flash-msg {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+        
+        <div class="footer-line"></div>
+        <footer>
+            &copy;  جامعة الكوفة - كلية علوم الحاسوب والرياضيات 2026 
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // تعريف العناصر
+            const themeBtn = document.getElementById("themeToggle");
+            const body = document.body;
+
+            // 1. التحقق من الوضع المحفوظ سابقاً في المتصفح
+            const savedTheme = localStorage.getItem("theme");
+            
+            if (savedTheme === "light") {
+                body.classList.add("light-mode");
+                if(themeBtn) themeBtn.textContent = "☀️";
+            } else {
+                body.classList.remove("light-mode");
+                if(themeBtn) themeBtn.textContent = "🌙";
+            }
+
+            // 2. تفعيل الزر عند الضغط
+            if (themeBtn) {
+                themeBtn.addEventListener("click", () => {
+                    body.classList.toggle("light-mode"); // تبديل الكلاس
+
+                    if (body.classList.contains("light-mode")) {
+                        themeBtn.textContent = "☀️";
+                        localStorage.setItem("theme", "light"); // حفظ كـ نهاري
+                    } else {
+                        themeBtn.textContent = "🌙";
+                        localStorage.setItem("theme", "dark"); // حفظ كـ ليلي
+                    }
+                });
+            }
+
+            // 3. إخفاء رسائل التنبيه تلقائياً
+            const flashMessages = document.querySelectorAll('.flash-msg');
+            if (flashMessages.length > 0) {
+                setTimeout(() => {
+                    flashMessages.forEach(msg => {
+                        msg.style.opacity = '0';
+                        setTimeout(() => msg.remove(), 500);
+                    });
+                }, 4000);
+            }
+        });
+    </script>
+</body>
+</html>

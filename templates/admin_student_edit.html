@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}تعديل درجات الطالب{% endblock %}
+
+{% block content %}
+
+<section class="card form-container" style="max-width: 1200px;">
+    <h2 class="glow-title">تعديل درجات الطالب: {{ student.full_name }}</h2>
+
+    <form method="POST" class="course-grade-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <h3 class="section-heading">بيانات القبول والمعدلات</h3>
+        
+        <div class="form-grid">
+            <div class="input-box">
+                <label>نوع القبول</label>
+                <select name="type" required>
+                    <option value="عام" {% if admission and admission.type=='عام' %}selected{% endif %}>عام</option>
+                    <option value="خاص" {% if admission and admission.type=='خاص' %}selected{% endif %}>خاص</option>
+                </select>
+            </div>
+
+            <div class="input-box">
+                <label>سنة القبول</label>
+                <input type="text" name="year" value="{{ admission.year if admission else '2025' }}" required>
+            </div>
+            
+            <div class="input-box">
+                <label>المعدل الإجمالي (يُحسب تلقائياً)</label>
+                <input type="text" name="avg" value="{{ admission.avg if admission else '---' }}" readonly class="readonly-input">
+            </div>
+
+            <div class="input-box">
+                <label>ملاحظات القبول</label>
+                <textarea name="notes" rows="3">{{ admission.notes if admission else '' }}</textarea>
+            </div>
+        </div>
+        
+        <h3 class="section-heading">درجات المواد الدراسية</h3>
+        
+        <div class="tab-buttons" style="margin-bottom: 20px;">
+            <button type="button" class="btn tab-btn active" onclick="showSemester('sem1')" id="tab-sem1">كورس أول</button>
+            <button type="button" class="btn tab-btn" onclick="showSemester('sem2')" id="tab-sem2">كورس ثاني</button>
+            <button type="button" class="btn tab-btn all-btn" onclick="showSemester('all')" id="tab-all">الكل</button>
+        </div>
+
+        {% if courses %}
+        <div class="table-responsive">
+            <table class="data-table grade-table">
+                <thead>
+                    <tr>
+                        <th class="course-name-col">المادة / الفصل</th>
+                        <th class="grade-col" colspan="1">السعي (50)</th>
+                        <th class="grade-col">النهائي (50)</th>
+                        <th class="grade-col">المجموع (100)</th>
+                    </tr>
+                </thead>
+                <tbody id="course-list-body">
+                    {% for c in courses %}
+                    {% set semester_key = c.semester | replace(' ', '-') %}
+                    <tr class="semester-row semester-{{ semester_key }}" data-semester="{{ c.semester }}">
+                        <td class="course-title-cell">
+                            <strong>{{ c.course_name }}</strong>
+                            <span class="course-term">({{ c.semester or 'غير محدد' }})</span>
+                        </td>
+
+                        <td class="coursework-breakdown-cell" colspan="1">
+                            <div class="breakdown-inputs">
+                                {% for i in range(5) %}
+                                {% set cw_value = c.coursework_breakdown[i] if c.coursework_breakdown|length > i else '' %}
+                                <input type="number" name="cw{{ i+1 }}_{{ c.id }}" 
+                                    value="{{ cw_value | int if cw_value != '' and cw_value is not none else '' }}"
+                                    placeholder="0" min="0" max="50" class="cw-input small-input">
+                                {% endfor %}
+                            </div>
+                        </td>
+
+                        <td class="grade-input-cell">
+                            <input type="number" name="final_{{ c.id }}"
+                                value="{{ c.final_exam | int if c.final_exam else '' }}" 
+                                placeholder="50" min="0" max="50" class="small-input">
+                        </td>
+
+                        <td class="total-grade-cell">
+                            {{ c.grade | int if c.grade and c.grade|int > 0 else '0' }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="no-data-message">لم يتم تسجيل مواد لهذا الطالب بعد</p>
+        {% endif %}
+
+        <div class="btn-box form-actions">
+            <a href="{{ url_for('admin_students_list') }}" class="back-btn">إلغاء والعودة للقائمة</a>
+            
+            <a href="{{ url_for('admin_student_print', student_id=student.id) }}" target="_blank" class="action-btn print-link">طباعة السجل</a>
+            
+            <button type="submit" class="next-btn">حفظ وتحديث الدرجات</button>
+        </div>
+
+    </form>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        
+        const rows = document.querySelectorAll('#course-list-body tr');
+        const tabButtons = document.querySelectorAll('.tab-buttons .tab-btn');
+
+        function showSemester(semesterKey) {
+            
+            // 1. تحديث ستايل أزرار التبويب
+            tabButtons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const activeTab = document.getElementById('tab-' + semesterKey);
+            if (activeTab) {
+                activeTab.classList.add('active');
+            }
+            
+            // 2. تصفية وعرض الصفوف
+            rows.forEach(row => {
+                const semester = row.getAttribute('data-semester');
+                let isVisible = false;
+
+                if (semesterKey === 'all') {
+                    isVisible = true;
+                } else if (semesterKey === 'sem1' && semester === 'كورس أول') {
+                    isVisible = true;
+                } else if (semesterKey === 'sem2' && semester === 'كورس ثاني') {
+                    isVisible = true;
+                }
+                
+                row.style.display = isVisible ? '' : 'none';
+            });
+        }
+        
+        // ربط الدالة بالنافذة
+        window.showSemester = showSemester;
+
+        // العرض الافتراضي عند تحميل الصفحة: عرض الكورس الأول
+        showSemester('sem1');
+    });
+</script>
+{% endblock %}

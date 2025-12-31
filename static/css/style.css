@@ -1,0 +1,974 @@
+/* ==========================================================================
+   1. GLOBAL RESET & CORE VARIABLES (المتغيرات والألوان)
+   ========================================================================== */
+:root {
+    --primary-color: #00ff9d;       /* أخضر نيون مشرق */
+    --primary-dark: #00cc7a;        /* درجة أغمق قليلاً للحدود */
+    --primary-hover: #00e68e;       /* لون عند التحويم */
+    --bg-dark: #050e14;             /* خلفية الموقع (كحلي مائل للسواد) */
+    --bg-sidebar: #02080c;          /* خلفية الشريط الجانبي */
+    --glass-bg: rgba(0, 255, 157, 0.03); /* خلفية الكروت الشفافة */
+    --text-main: #ffffff;           /* لون النص الأساسي (أبيض) */
+    --text-muted: #b0f2d9;          /* لون النص الثانوي */
+    --border-color: rgba(0, 255, 157, 0.25);
+    --error: #ff4f5e;               /* لون الخطأ (أحمر) */
+    --success: #2ecc71;             /* لون النجاح */
+    --input-bg: rgba(0, 0, 0, 0.5); /* خلفية حقول الإدخال */
+}
+
+/* تصفير الهوامش والخطوط */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Cairo", sans-serif;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    overflow-x: hidden;
+    line-height: 1.6;
+    direction: rtl; /* الاتجاه عربي */
+    transition: background-color 0.3s, color 0.3s;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+}
+
+ul {
+    list-style: none;
+}
+
+/* ==========================================================================
+   2. CUSTOM SCROLLBAR (شريط التمرير)
+   ========================================================================== */
+::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-sidebar);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 6px;
+    border: 3px solid var(--bg-sidebar);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-hover);
+}
+
+/* ==========================================================================
+   3. LAYOUT STRUCTURE (الهيكل العام)
+   ========================================================================== */
+
+/* الخط المتوهج في أعلى الصفحة */
+.top-glow-line {
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-dark), var(--primary-color), var(--primary-dark));
+    background-size: 200% 100%;
+    animation: glow 3s linear infinite;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+    box-shadow: 0 0 15px var(--primary-color);
+}
+
+@keyframes glow {
+    0% { background-position: 0%; }
+    100% { background-position: 200%; }
+}
+
+/* حاوية المحتوى (يمين السايدبار) */
+.content {
+    margin-right: 260px;
+    padding: 40px;
+    flex: 1;
+    position: relative;
+    z-index: 1;
+}
+
+/* الفوتر */
+.footer-line {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+    margin-top: 60px;
+    opacity: 0.3;
+}
+
+footer {
+    text-align: center;
+    padding: 25px;
+    color: var(--text-muted);
+    font-size: 13px;
+    margin-top: auto;
+}
+
+/* ==========================================================================
+   4. SIDEBAR (الشريط الجانبي)
+   ========================================================================== */
+.sidebar {
+    width: 260px;
+    background: var(--bg-sidebar);
+    border-left: 1px solid var(--border-color);
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    padding: 30px 20px;
+    text-align: center;
+    z-index: 1000;
+    overflow-y: auto;
+    box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+}
+
+.sidebar .logo {
+    width: 90px;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 0 10px rgba(0, 255, 157, 0.2));
+    transition: transform 0.3s;
+}
+
+.sidebar .logo:hover {
+    transform: scale(1.05) rotate(3deg);
+}
+
+.sidebar h3 {
+    color: var(--primary-color);
+    margin-bottom: 5px;
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+
+.sidebar p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 35px;
+    opacity: 0.8;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding-bottom: 15px;
+}
+
+/* قائمة الروابط */
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.menu a {
+    position: relative;
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-muted);
+    padding: 14px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.menu a:hover {
+    background: rgba(0, 255, 157, 0.1);
+    color: #fff;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 15px rgba(0, 255, 157, 0.15);
+    transform: translateX(-5px);
+}
+
+.menu .logout-btn {
+    margin-top: 30px;
+    background: rgba(255, 79, 94, 0.1) !important;
+    border-color: rgba(255, 79, 94, 0.3) !important;
+    color: var(--error) !important;
+}
+
+.menu .logout-btn:hover {
+    background: var(--error) !important;
+    color: #fff !important;
+    box-shadow: 0 0 15px rgba(255, 79, 94, 0.3);
+}
+
+/* ==========================================================================
+   5. THEME TOGGLE BUTTON (زر تغيير الوضع)
+   ========================================================================== */
+.theme-btn {
+    position: fixed;
+    top: 25px;
+    left: 25px;
+    background: var(--primary-color);
+    color: #000;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.4);
+    transition: transform 0.3s;
+}
+
+.theme-btn:hover {
+    transform: rotate(15deg) scale(1.1);
+    background: #fff;
+}
+
+/* ==========================================================================
+   6. CARDS & FORMS (البطاقات والنماذج)
+   ========================================================================== */
+.card, .form-container {
+    width: 98%;
+    max-width: 1600px;
+    margin: 0 auto 50px auto;
+    background: var(--glass-bg);
+    border: 1px solid var(--border-color);
+    padding: 45px;
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.form-container {
+    max-width: 950px;
+}
+
+.glow-title {
+    text-align: center;
+    margin-bottom: 40px;
+    font-size: 28px;
+    color: var(--primary-color);
+    font-weight: 800;
+    text-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
+}
+
+.section-heading {
+    color: var(--primary-color);
+    margin: 40px 0 25px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 1.4rem;
+    font-weight: 700;
+    position: relative;
+}
+
+.section-heading::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    right: 0;
+    width: 60px;
+    height: 2px;
+    background: var(--primary-color);
+}
+
+/* ==========================================================================
+   7. INPUTS & GRIDS (الحقول والشبكات)
+   ========================================================================== */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+}
+
+.input-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.input-box {
+    margin-bottom: 25px;
+}
+
+.input-box label {
+    font-size: 15px;
+    margin-bottom: 10px;
+    display: block;
+    color: var(--text-muted);
+    font-weight: bold;
+}
+
+/* 🔥 تنسيق الحقول (نص أبيض إجباري) 🔥 */
+input, select, textarea {
+    width: 100%;
+    height: 50px;
+    padding: 0 20px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: var(--input-bg) !important;
+    color: #ffffff !important; /* الكتابة بيضاء */
+    font-size: 16px;
+    font-weight: 500;
+    outline: none;
+    transition: all 0.3s;
+}
+
+textarea {
+    height: auto;
+    padding: 15px 20px;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: var(--primary-color);
+    background-color: rgba(0, 255, 157, 0.05) !important;
+    box-shadow: 0 0 15px rgba(0, 255, 157, 0.15);
+}
+
+select option {
+    background: #0a151c;
+    color: #fff;
+    padding: 10px;
+}
+
+.readonly-input {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+    color: var(--primary-color) !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
+    cursor: default;
+}
+
+/* ==========================================================================
+   8. BUTTONS (الأزرار - موحدة الحجم)
+   ========================================================================== */
+button, .btn, .action-btn {
+    height: 50px;
+    padding: 0 30px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 700;
+    color: #000;
+    background: var(--primary-color);
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    white-space: nowrap;
+    text-decoration: none !important;
+}
+
+button:hover, .btn:hover, .action-btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 255, 157, 0.4);
+    color: #000;
+}
+
+button:active, .btn:active {
+    transform: translateY(0);
+}
+
+.back-btn {
+    background: #2c3e50;
+    color: #fff;
+}
+.back-btn:hover {
+    background: #34495e;
+    color: #fff;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.next-btn, .save-btn {
+    min-width: 140px;
+}
+
+.remove-btn {
+    height: 40px;
+    padding: 0 15px;
+    background: rgba(255, 79, 94, 0.15);
+    color: var(--error);
+    border: 1px solid var(--error);
+}
+.remove-btn:hover {
+    background: var(--error);
+    color: #fff;
+    box-shadow: 0 5px 15px rgba(255, 79, 94, 0.3);
+}
+
+.add-btn {
+    background: transparent;
+    color: var(--primary-color);
+    border: 2px dashed var(--primary-color);
+    width: 100%;
+    height: 55px;
+    margin: 25px 0;
+    font-size: 1.1rem;
+}
+.add-btn:hover {
+    background: rgba(0, 255, 157, 0.1);
+    border-style: solid;
+    box-shadow: none;
+}
+
+.btn-box, .form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 50px;
+    padding-top: 30px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+/* ==========================================================================
+   9. TABLES (الجداول - إصلاح التفاف النص)
+   ========================================================================== */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    margin-top: 30px;
+}
+
+.data-table, .admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: right;
+    font-size: 15px;
+    min-width: 800px;
+}
+
+.data-table th, .admin-table th {
+    background: var(--primary-color);
+    color: #000;
+    padding: 18px 20px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.data-table td, .admin-table td {
+    background-color: rgba(10, 21, 28, 0.7);
+    color: #ffffff !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 16px 20px;
+    vertical-align: middle;
+    /* 🔥 إصلاح النص الطويل 🔥 */
+    white-space: normal;
+    word-wrap: break-word;
+    max-width: 350px;
+    line-height: 1.6;
+}
+
+.data-table tr:hover td, .admin-table tr:hover td {
+    background-color: rgba(0, 255, 157, 0.05);
+}
+
+.no-data-message, .no-data-row {
+    text-align: center !important;
+    padding: 60px;
+    font-style: italic;
+    color: #777 !important;
+}
+
+/* أزرار الإجراءات داخل الجدول */
+.actions-cell {
+    white-space: nowrap !important;
+    width: 1%;
+}
+
+.actions-cell a, .actions-cell button {
+    height: 35px;
+    padding: 0 15px;
+    font-size: 13px;
+    border-radius: 6px;
+    margin: 0 4px;
+    background: transparent;
+    border: 1px solid transparent;
+}
+
+/* الزر الأخضر (تعديل) */
+.edit-link { 
+    border-color: var(--primary-color); 
+    color: #ffffff !important; /* أبيض */
+}
+.edit-link:hover { 
+    background: var(--primary-color); 
+    color: #000 !important; 
+}
+
+/* الزر الأحمر (حذف) */
+.delete-link { 
+    border-color: var(--error); 
+    color: var(--error); 
+    cursor: pointer; 
+}
+.delete-link:hover { 
+    background: var(--error); 
+    color: #fff; 
+}
+
+/* الزر البنفسجي (طباعة) */
+.print-link { 
+    background-color: transparent; 
+    color: #e056fd; 
+    border: 2px solid #e056fd; 
+}
+.print-link:hover { 
+    background-color: #e056fd; 
+    color: #fff; 
+    box-shadow: 0 0 15px rgba(224, 86, 253, 0.4); 
+}
+
+/* الزر الأزرق (تعديل بيانات كامل) */
+.full-edit-link {
+    color: #ffffff !important;
+    border-color: #3498db;
+}
+.full-edit-link:hover {
+    background: #3498db;
+    color: #ffffff !important;
+}
+
+.role-tag {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #000 !important;
+    display: inline-block;
+}
+.role-super { background: #ffd700; }
+.role-admin { background: #90ee90; }
+
+/* ==========================================================================
+   10. SEARCH BAR (البحث المتقدم)
+   ========================================================================== */
+.search-bar-styled {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    border-radius: 14px;
+    border: 1px dashed var(--border-color);
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 35px;
+}
+
+.search-group { display: flex; flex-direction: column; gap: 8px; }
+.dropdown-group { flex: 1; min-width: 220px; }
+.input-group-search { flex: 3; min-width: 300px; }
+.btn-group-search { flex: 0; min-width: 140px; flex-direction: row; align-items: flex-end; gap: 10px; }
+
+.search-select, .input-group-search input, .search-btn, .btn-group-search .back-btn {
+    height: 55px !important;
+    border-radius: 10px;
+}
+
+.search-select {
+    background: #0d1b26 !important;
+    border: 1px solid var(--primary-color) !important;
+    color: #fff !important;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.input-group-search input {
+    background: #0d1b26 !important;
+    border: 1px solid var(--primary-color) !important;
+    font-size: 16px;
+    color: #fff !important;
+}
+
+.search-btn {
+    width: 100%;
+    font-size: 16px;
+    background: var(--primary-color);
+    color: #000;
+    margin: 0 !important;
+}
+
+/* ==========================================================================
+   11. EDIT GRADES (مربعات الدرجات العريضة)
+   ========================================================================== */
+.tab-buttons {
+    display: flex; gap: 15px; margin-bottom: 30px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 12px;
+}
+.tab-buttons .tab-btn {
+    flex: 1; height: 50px; background: transparent; color: #888;
+    border: 1px solid transparent; font-size: 16px; border-radius: 8px; font-weight: bold;
+}
+.tab-buttons .tab-btn.active {
+    background: var(--primary-color); color: #000; box-shadow: 0 0 20px rgba(0, 255, 157, 0.2);
+}
+.tab-buttons .tab-btn:hover:not(.active) { color: #fff; background: rgba(255,255,255,0.05); }
+
+.course-title-cell {
+    text-align: right !important; font-size: 1.1em; width: 25%; color: #fff !important; font-weight: bold;
+}
+.course-term {
+    display: block; font-size: 0.85em; color: var(--primary-dark); margin-top: 5px; font-weight: normal;
+}
+.breakdown-inputs { display: flex; gap: 10px; justify-content: center; }
+
+/* 🔥 مربعات الدرجات العريضة 🔥 */
+.grade-table input, input.small-input {
+    width: 110px !important;
+    height: 50px !important;
+    text-align: center;
+    padding: 5px !important;
+    font-size: 18px !important;
+    font-weight: bold;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    border: 1px solid var(--primary-dark) !important;
+    color: #ffffff !important;
+    border-radius: 8px;
+    margin: 0 3px;
+}
+.grade-table input:focus, input.small-input:focus {
+    border-color: var(--primary-color) !important;
+    background-color: rgba(0, 255, 157, 0.1) !important;
+    box-shadow: 0 0 15px rgba(0, 255, 157, 0.2) !important;
+}
+
+.grade-input-cell input { width: 120px !important; }
+.total-grade-cell { font-weight: 900; font-size: 1.4em; color: var(--primary-color) !important; }
+
+tr.semester-row { transition: background 0.3s; }
+tr.semester-row.semester-كورس-أول { background: rgba(0, 255, 157, 0.02); }
+tr.semester-row.semester-كورس-ثاني { background: rgba(255, 255, 255, 0.02); }
+
+/* ==========================================================================
+   12. REVIEW PAGE & STEPPER
+   ========================================================================== */
+.kv { margin: 30px 0; }
+.kv li {
+    padding: 18px 25px; border-right: 4px solid var(--primary-color);
+    background: rgba(255, 255, 255, 0.02); margin-bottom: 15px; border-radius: 10px;
+    display: flex; justify-content: space-between; align-items: center; transition: 0.2s;
+}
+.kv li:hover { background: rgba(255, 255, 255, 0.05); transform: translateX(-5px); }
+.kv li b { color: var(--primary-color); font-weight: 800; font-size: 1.1em; }
+.kv li span { color: #fff; font-size: 1.1em; font-weight: 500; }
+
+.steps-container {
+    display: flex; justify-content: space-between; margin: 0 auto 40px auto; position: relative; max-width: 900px; padding: 0 20px;
+}
+.progress-line {
+    position: absolute; top: 20px; left: 50px; right: 50px; height: 2px; background: rgba(255,255,255,0.1); z-index: 0;
+}
+.step-item {
+    position: relative; z-index: 1; text-align: center; display: flex; flex-direction: column; align-items: center; width: 60px; transition: 0.3s;
+}
+.step-icon {
+    width: 40px; height: 40px; background: #031a14; border: 2px solid #333; border-radius: 50%;
+    display: flex; justify-content: center; align-items: center; font-weight: bold; color: #666;
+    margin-bottom: 8px; transition: 0.3s; box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+.step-label { font-size: 12px; color: #666; font-weight: bold; transition: 0.3s; white-space: nowrap; }
+.step-item.active .step-icon {
+    border-color: var(--primary-color); background: var(--primary-color); color: #000;
+    box-shadow: 0 0 20px var(--primary-color); transform: scale(1.1);
+}
+.step-item.active .step-label { color: var(--primary-color); }
+.step-item:hover .step-icon { border-color: var(--primary-color); color: #fff; }
+
+/* ==========================================================================
+   13. LOGIN & DASHBOARD (محدثة لدعم التصميم الجديد)
+   ========================================================================== */
+.login-page { display: flex; justify-content: center; align-items: center; height: 100vh; background: radial-gradient(circle at center, #0a202e 0%, #050e14 80%); }
+
+/* بطاقة تسجيل الدخول (Overrides Bootstrap) */
+.login-card {
+    background: var(--glass-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 0 50px rgba(0, 255, 157, 0.1) !important;
+    border-radius: 20px !important;
+    padding: 60px 40px !important;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    color: #fff !important;
+}
+
+.login-header h3 { color: var(--primary-color) !important; font-weight: 800; }
+.login-header p { color: var(--text-muted) !important; }
+
+/* حقول الدخول في صفحة الدخول */
+.login-card .form-control {
+    background-color: rgba(0,0,0,0.5) !important;
+    border: 1px solid var(--border-color) !important;
+    color: #fff !important;
+}
+.login-card .form-control:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 15px rgba(0, 255, 157, 0.2) !important;
+}
+.login-card .btn-login {
+    background: var(--primary-color) !important;
+    color: #000 !important;
+    border: none;
+    font-weight: bold;
+}
+.login-card .btn-login:hover {
+    background: var(--primary-hover) !important;
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.4);
+}
+
+.welcome-box {
+    background: linear-gradient(135deg, rgba(0, 255, 157, 0.1) 0%, rgba(6, 19, 32, 0.8) 100%);
+    border: 1px solid var(--border-color); border-right: 6px solid var(--primary-color);
+    padding: 40px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 50px;
+}
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 30px; margin-top: 30px; }
+.stat-box {
+    background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(0, 255, 157, 0.2);
+    padding: 30px; border-radius: 16px; text-align: center; transition: 0.4s; position: relative; overflow: hidden;
+}
+.stat-box:hover { transform: translateY(-10px); background: rgba(0, 255, 157, 0.15); border-color: var(--primary-color); }
+.stat-number { font-size: 3.5em; font-weight: 800; color: var(--primary-color); margin-bottom: 5px; display: block; }
+.box-master .stat-number { color: #3498db; } .box-phd .stat-number { color: #f39c12; }
+
+/* ==========================================================================
+   14. LIGHT MODE
+   ========================================================================== */
+body.light-mode {
+    background: #f4fdf9; color: #1a1a1a;
+    --primary-color: #00b365; --primary-hover: #009955; --bg-sidebar: #ffffff;
+    --glass-bg: #ffffff; --text-main: #1a1a1a; --input-bg: #ffffff; --text-muted: #555;
+    --border-color: #d1d9e6;
+}
+body.light-mode .sidebar { background: #fff; border-right: 1px solid #e0e0e0; box-shadow: 2px 0 10px rgba(0,0,0,0.05); }
+body.light-mode .sidebar h3 { color: #007c33; }
+body.light-mode .menu a { background: #f8f9fa; color: #333; border-color: #e9ecef; }
+body.light-mode .menu a:hover { background: var(--primary-color); color: #fff; }
+body.light-mode .card, body.light-mode .form-container, body.light-mode .welcome-box, body.light-mode .stat-box {
+    background: #fff; border-color: #d1d9e6; box-shadow: 0 5px 20px rgba(0,0,0,0.05); color: #000;
+}
+body.light-mode input, body.light-mode select, body.light-mode textarea {
+    background: #fff !important; color: #333 !important; border-color: #ccc;
+}
+body.light-mode .data-table th { background: #00b365; color: #fff; }
+body.light-mode .data-table td { background: #fff; color: #333 !important; border-color: #eee; }
+body.light-mode .data-table tbody tr:hover td { background: #f1f8e9; }
+body.light-mode .grade-table input { background: #f9f9f9 !important; color: #000 !important; border-color: #ccc !important; }
+
+/* ==========================================================================
+   15. RESPONSIVE DESIGN
+   ========================================================================== */
+@media (max-width: 1024px) {
+    .content { margin-right: 0; padding: 20px; padding-top: 60px; }
+    .sidebar { width: 100%; height: auto; position: relative; border-left: none; border-bottom: 2px solid var(--primary-color); padding-top: 10px; display: flex; flex-direction: column; align-items: center; }
+    .menu { flex-direction: row; flex-wrap: wrap; justify-content: center; width: 100%; gap: 10px; }
+    .menu a { padding: 10px; font-size: 13px; flex: 1 1 auto; justify-content: center; }
+    .search-bar-styled { flex-direction: column; }
+    .input-group-search { width: 100%; }
+    .btn-group-search { width: 100%; justify-content: stretch; }
+    .search-btn { width: 100%; }
+}
+@media (max-width: 768px) {
+    .form-grid, .stats-grid, .input-grid-2 { grid-template-columns: 1fr; }
+    .btn-box, .form-actions { flex-direction: column; }
+    .grade-table input, input.small-input { width: 100% !important; min-width: 60px; }
+    .card, .form-container { width: 100%; padding: 20px; }
+    .steps-container { overflow-x: auto; justify-content: flex-start; gap: 20px; }
+    .progress-line { display: none; }
+}
+
+/* ==========================================================================
+   16. PRINT SETTINGS (تنسيق الصفحات الـ 7 للطباعة)
+   ========================================================================== */
+@media print {
+    /* إخفاء عناصر الموقع */
+    .sidebar, .top-glow-line, .theme-btn, .form-actions, .actions-cell, .tab-buttons, .btn-box, footer, .menu, .welcome-box, .filter-form, .card:not(.print-page), .steps-container, .no-print, .content {
+        display: none !important;
+    }
+
+    /* إعدادات الجسم */
+    body {
+        margin: 0;
+        padding: 0;
+        background: white !important;
+        color: black !important;
+        width: 100%;
+        height: auto;
+        overflow: visible;
+        font-family: 'Times New Roman', serif;
+    }
+
+    /* صفحة الطباعة (Print Page A4) */
+    .print-page {
+        display: flex !important;
+        flex-direction: column;
+        width: 210mm;
+        height: 297mm; /* ارتفاع ثابت A4 */
+        margin: 0;
+        padding: 10mm 15mm;
+        page-break-after: always; /* فاصل صفحات إجباري */
+        position: relative;
+        background: white;
+        border: none;
+        box-shadow: none;
+        box-sizing: border-box;
+    }
+
+    /* الترويسة */
+    .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 2px double #000;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        width: 100%;
+    }
+
+    .logo { width: 80px; height: auto; }
+    .header-text { font-size: 11pt; font-weight: bold; line-height: 1.4; }
+    .header-center { text-align: center; }
+
+    /* العناوين والجداول */
+    .doc-title { text-align: center; font-size: 20pt; font-weight: bold; text-decoration: underline; margin: 20px 0; text-transform: uppercase; }
+    .grades-table { width: 100%; border-collapse: collapse; font-size: 11pt; margin-top: 15px; }
+    .grades-table th, .grades-table td { border: 1px solid #000 !important; padding: 4px; text-align: center; color: #000 !important; }
+    .grades-table th { background-color: #eee !important; -webkit-print-color-adjust: exact; }
+
+    /* النصوص */
+    .info-list { font-size: 12pt; line-height: 1.8; margin-top: 20px; }
+    .info-list b { min-width: 140px; display: inline-block; font-weight: bold; }
+    
+    /* التواقيع في الأسفل */
+    .signatures { 
+        display: flex; 
+        justify-content: space-between; 
+        margin-top: auto; /* دفع التواقيع للأسفل */
+        padding-top: 40px; 
+        font-weight: bold; 
+        width: 100%;
+    }
+    .sig-block { text-align: center; width: 30%; }
+    .sig-title { border-top: 1px solid #000; padding-top: 5px; display: inline-block; min-width: 130px; }
+    
+    /* الصور */
+    .photo-box { position: absolute; top: 160px; width: 35mm; height: 45mm; border: 1px solid #000; }
+    .photo-box img { width: 100%; height: 100%; object-fit: cover; }
+    .photo-en { right: 20mm; } 
+    .photo-ar { left: 20mm; }
+}
+
+/* ==========================================================================
+   17. STUDENT PORTAL STYLES (جديد: واجهة الطالب)
+   ========================================================================== */
+.student-header { 
+    background: linear-gradient(135deg, var(--bg-sidebar), #031a14); 
+    border-bottom: 3px solid var(--primary-color);
+    color: white; 
+    padding: 2.5rem 0; 
+    margin-bottom: 2rem; 
+    border-radius: 0 0 30px 30px; 
+    box-shadow: 0 4px 20px rgba(0, 255, 157, 0.1); 
+}
+
+.student-header .btn-header {
+    background: rgba(0, 255, 157, 0.1);
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    border-radius: 50px;
+    padding: 8px 20px;
+    margin: 5px;
+    transition: 0.3s;
+}
+.student-header .btn-header:hover {
+    background: var(--primary-color);
+    color: #000;
+    box-shadow: 0 0 15px var(--primary-color);
+}
+
+.course-card { 
+    cursor: pointer; 
+    transition: all 0.3s ease; 
+    border: 1px solid var(--border-color);
+    border-radius: 15px; 
+    margin-bottom: 15px; 
+    background: var(--glass-bg);
+    overflow: hidden;
+    backdrop-filter: blur(5px);
+}
+.course-card:hover { 
+    transform: translateY(-3px); 
+    box-shadow: 0 8px 15px rgba(0, 255, 157, 0.1); 
+    border-color: var(--primary-color);
+}
+
+.course-header { 
+    padding: 20px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+.course-header h5 { color: #fff !important; }
+.course-header small { color: var(--text-muted) !important; }
+
+/* صندوق الدرجات المخفي */
+.course-grade-box { 
+    background-color: rgba(0, 0, 0, 0.3); 
+    padding: 20px; 
+    border-top: 1px dashed var(--border-color); 
+    display: none; 
+    animation: fadeIn 0.4s ease; 
+    color: #fff;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ألوان الدرجات */
+.grade-badge { font-size: 1.4em; font-weight: 800; display: block; margin-top: 5px; }
+.pass { color: var(--success); text-shadow: 0 0 10px rgba(46, 204, 113, 0.4); } 
+.fail { color: var(--error); text-shadow: 0 0 10px rgba(255, 79, 94, 0.4); } 
+
+/* ==========================================================================
+   18. MODALS STYLES (جديد: النوافذ المنبثقة)
+   ========================================================================== */
+.modal-content {
+    background: var(--bg-sidebar);
+    border: 1px solid var(--primary-color);
+    box-shadow: 0 0 30px rgba(0, 255, 157, 0.2);
+    color: #fff;
+}
+.modal-header {
+    border-bottom: 1px solid var(--border-color);
+}
+.modal-footer {
+    border-top: 1px solid var(--border-color);
+}
+.modal-title {
+    color: var(--primary-color);
+    font-weight: bold;
+}
+.modal-body .form-control {
+    background: rgba(0,0,0,0.5) !important;
+    border: 1px solid var(--border-color) !important;
+    color: #fff !important;
+}
+.modal-body .form-control:focus {
+    border-color: var(--primary-color) !important;
+}
+.btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
