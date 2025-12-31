@@ -1,73 +1,0 @@
-{% extends "base.html" %}
-{% block content %}
-
-<section class="card">
-    <h2 class="glow-title">📚 سجل البحوث العلمية</h2>
-
-    <form method="GET" class="filter-form search-bar-styled">
-        
-        <div class="search-group dropdown-group">
-            <select name="filter_type" class="search-select">
-                <option value="student_name" {% if filter_type == 'student_name' %}selected{% endif %}>اسم الطالب</option>
-                <option value="supervisor" {% if filter_type == 'supervisor' %}selected{% endif %}>اسم المشرف</option>
-                <option value="title" {% if filter_type == 'title' %}selected{% endif %}>عنوان البحث/الأطروحة</option>
-                <option value="date" {% if filter_type == 'date' %}selected{% endif %}>تاريخ البدء</option>
-                <option value="id" {% if filter_type == 'id' %}selected{% endif %}>الرقم الجامعي (ID)</option>
-            </select>
-        </div>
-
-        <div class="search-group input-group-search">
-            <input type="text" name="q" placeholder="أدخل كلمة البحث..." value="{{ request.args.get('q', '') }}">
-        </div>
-
-        <div class="search-group btn-group-search">
-            <button type="submit" class="btn search-btn">🔍 بحث</button>
-            {% if request.args.get('q') %}
-                <a href="{{ url_for('research_registry') }}" class="btn back-btn" style="background: #ff4f4f;">إلغاء</a>
-            {% endif %}
-        </div>
-    </form>
-
-    <div class="table-responsive">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>الرقم الجامعي (ID)</th>
-                    <th>اسم الطالب</th>
-                    <th>اسم المشرف</th>
-                    <th>عنوان البحث</th>
-                    <th>تاريخ البدء</th>
-                    <th>ملف البحث</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if researches %}
-                    {% for r in researches %}
-                    <tr>
-                        <td style="font-weight: bold; color: #00ff90;">{{ r.uid }}</td>
-                        <td>{{ r.full_name }}</td>
-                        <td>{{ r.supervisor }}</td>
-                        <td>{{ r.title }}</td>
-                        <td>{{ r.start_date or '---' }}</td>
-                        <td class="actions-cell">
-                            {% if r.research_filename %}
-                                <a href="{{ url_for('uploaded_file', filename=r.research_filename) }}" target="_blank" class="action-btn edit-link">
-                                    📄 عرض الملف
-                                </a>
-                            {% else %}
-                                <span style="color: #777;">لا يوجد ملف</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan="6" class="no-data-row">لا توجد بحوث مطابقة لعملية البحث</td>
-                    </tr>
-                {% endif %}
-            </tbody>
-        </table>
-    </div>
-</section>
-
-{% endblock %}
