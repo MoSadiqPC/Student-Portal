@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% include 'student_steps.html' %}
+
+<div class="form-container">
+    <h2 class="glow-title">القسم الثالث: المواد الدراسية</h2>
+
+    {% if courses %}
+    <h3 class="section-heading">المواد المسجلة حالياً (الإجمالي: {{ total_credits }} وحدة)</h3>
+    <div class="table-responsive" style="margin-bottom: 25px;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>المادة</th>
+                    <th>الفصل</th>
+                    <th>الوحدات</th>
+                    <th>إجراء</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in courses %}
+                <tr>
+                    <td>{{ course.course_name }}</td>
+                    <td>{{ course.semester }}</td>
+                    <td>{{ course.credits }}</td>
+                    <td>
+                        <form action="{{ url_for('courses') }}" method="POST" class="delete-form" style="display:inline;"
+                              onsubmit="return confirm('هل أنت متأكد من حذف هذه المادة؟');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="course_id" value="{{ course.id }}">
+                            <button type="submit" class="action-btn delete-link" style="padding: 5px 10px;">حذف</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="no-data-message">لا توجد مواد مسجلة لهذا الطالب حالياً.</p>
+    {% endif %}
+
+    <h3 class="section-heading">إضافة مواد جديدة</h3>
+    
+    <form method="POST" id="courses-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <div id="course-fields">
+            <div class="course-row">
+                <div class="input-box" style="flex: 3;">
+                    <label>اسم المادة</label>
+                    <input type="text" name="course_name[]" placeholder="اسم المادة">
+                </div>
+
+                <div class="input-box" style="flex: 2;">
+                    <label>الفصل</label>
+                    <select name="course_term[]">
+                        <option value="كورس أول">كورس أول</option>
+                        <option value="كورس ثاني">كورس ثاني</option>
+                        <option value="صيفي">صيفي</option>
+                    </select>
+                </div>
+
+                <div class="input-box" style="flex: 1;">
+                    <label>الوحدات</label>
+                    <input type="number" name="course_units[]" placeholder="وحدة" min="1">
+                </div>
+                <button type="button" class="remove-btn" onclick="removeRow(this)" style="display:none; height: 40px; margin-top: 25px;">حذف</button>
+            </div>
+        </div>
+
+        <button type="button" onclick="addRow()" class="add-btn">إضافة مادة أخرى +</button>
+
+        <div class="btn-box">
+            <a href="{{ url_for('admission') }}" class="back-btn">رجوع</a>
+            <button type="submit" class="next-btn">التالي</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // JavaScript لإضافة صف جديد للمادة
+    function addRow() {
+        const fields = document.getElementById('course-fields');
+        const newRow = document.createElement('div');
+        newRow.className = 'course-row';
+        newRow.innerHTML = `
+            <div class="input-box" style="flex: 3;">
+                <input type="text" name="course_name[]" placeholder="اسم المادة" required>
+            </div>
+            <div class="input-box" style="flex: 2;">
+                <select name="course_term[]">
+                    <option value="كورس أول">كورس أول</option>
+                    <option value="كورس ثاني">كورس ثاني</option>
+                    <option value="صيفي">صيفي</option>
+                </select>
+            </div>
+            <div class="input-box" style="flex: 1;">
+                <input type="number" name="course_units[]" placeholder="وحدة" min="1" required>
+            </div>
+            <button type="button" class="remove-btn" onclick="removeRow(this)" style="height: 40px; margin-top: 25px;">حذف</button>
+        `;
+        fields.appendChild(newRow);
+    }
+
+    function removeRow(btn) {
+        // تأكد من عدم حذف جميع الصفوف
+        const fields = document.getElementById('course-fields');
+        if (fields.childElementCount > 1) {
+            btn.parentElement.remove();
+        } else {
+            alert('لا يمكن حذف جميع الصفوف. يجب ترك صف واحد على الأقل.');
+        }
+    }
+    
+    // عند تحميل الصفحة، إذا كان هناك صفوف، اجعل زر الحذف يظهر للصفوف التي تم إنشاؤها يدوياً
+    document.addEventListener('DOMContentLoaded', function() {
+        const rows = document.getElementById('course-fields').children;
+        if (rows.length > 1) {
+            Array.from(rows).forEach(row => {
+                const removeBtn = row.querySelector('.remove-btn');
+                if (removeBtn) removeBtn.style.display = 'block';
+            });
+        }
+    });
+</script>
+
+{% endblock %}

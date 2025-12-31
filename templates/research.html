@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% include 'student_steps.html' %}
+
+<section class="card form-container">
+    <h2 class="glow-title">القسم الرابع: بيانات البحث والإشراف</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="input-box">
+            <label>عنوان البحث / الأطروحة</label>
+            <input type="text" name="title" value="{{ data.title if data else '' }}" required>
+        </div>
+        
+        <div class="input-box">
+            <label>المشرف (الرئيسي)</label>
+            <input type="text" name="supervisor" value="{{ data.supervisor if data else '' }}" required>
+        </div>
+
+        <div class="input-box">
+            <label>تاريخ البدء المتوقع</label>
+            <input type="date" name="start_date" value="{{ data.start_date if data else '' }}">
+        </div>
+
+        <div class="input-box">
+            <label>كلمات مفتاحية (مفصولة بفارزة)</label>
+            <input type="text" name="keywords" value="{{ data.keywords if data else '' }}">
+        </div>
+
+        <div class="input-box">
+            <label>الملخص / النبذة</label>
+            <textarea name="abstract" rows="6" placeholder="أدخل ملخصاً مختصراً عن البحث (حد أقصى 500 كلمة)">{{ data.abstract if data else '' }}</textarea>
+        </div>
+
+        <div class="input-box">
+            <label>رفع ملف البحث (PDF / DOCX)</label>
+            <input type="file" name="research_file" accept=".pdf,.doc,.docx">
+            {% if data and data.research_filename %}
+                <div style="margin-top: 10px;">
+                    <span style="color: #00ff90; font-size: 0.9em;">✔ تم رفع ملف سابقاً:</span>
+                    <a href="{{ url_for('uploaded_file', filename=data.research_filename) }}" target="_blank" class="action-btn" style="padding: 5px 10px; font-size: 13px;">عرض الملف</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="btn-box form-actions">
+            <a class="back-btn" href="{{ url_for('courses') }}">رجوع</a>
+            <button class="next-btn" type="submit">حفظ والتالي</button>
+        </div>
+
+    </form>
+</section>
+
+{% endblock %}

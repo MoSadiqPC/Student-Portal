@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="card">
+    <h2 class="glow-title">قائمة الطلاب المسجلين</h2>
+
+    <form method="GET" class="search-bar-styled">
+        
+        <div class="search-group input-group-search">
+            <input type="text" name="q" value="{{ request.args.get('q', '') }}" placeholder="بحث بالاسم أو الرقم الجامعي..." autocomplete="off">
+        </div>
+
+        <div class="search-group dropdown-group">
+            <select name="level" class="search-select">
+                <option value="">-- كل المراحل --</option>
+                <option value="ماجستير" {% if request.args.get('level')=='ماجستير' %}selected{% endif %}>ماجستير</option>
+                <option value="دكتوراه" {% if request.args.get('level')=='دكتوراه' %}selected{% endif %}>دكتوراه</option>
+                <option value="دبلوم عالي" {% if request.args.get('level')=='دبلوم عالي' %}selected{% endif %}>دبلوم عالي</option>
+            </select>
+        </div>
+
+        <div class="search-group dropdown-group">
+            <select name="study_type" class="search-select">
+                <option value="">-- نوع الدراسة --</option>
+                <option value="صباحي" {% if request.args.get('study_type')=='صباحي' %}selected{% endif %}>صباحي</option>
+                <option value="مسائي" {% if request.args.get('study_type')=='مسائي' %}selected{% endif %}>مسائي</option>
+            </select>
+        </div>
+        
+        <div class="search-group btn-group-search">
+            <button type="submit" class="search-btn">🔍 بحث</button>
+        </div>
+    </form>
+    
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>الاسم (اضغط للعرض)</th> 
+                    <th>الرقم الجامعي</th>
+                    <th>المرحلة</th>
+                    <th>الدراسة</th>
+                    <th>المعدل</th>
+                    <th>القبول</th>
+                    <th style="min-width: 280px;">إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in students %}
+                <tr>
+                    <td>{{ s.id }}</td>
+                    
+                    {# --- خانة الاسم القابلة للنقر --- #}
+                    <td style="padding: 0 !important; vertical-align: middle;">
+                        <a href="{{ url_for('admin_student_view', student_id=s.id) }}" 
+                           style="display: block; 
+                                  width: 100%; 
+                                  height: 100%; 
+                                  padding: 15px 10px; 
+                                  color: #fff; 
+                                  font-weight: bold; 
+                                  text-decoration: none; 
+                                  cursor: pointer;"
+                           title="اضغط لعرض الملف الكامل">
+                            {{ s.full_name }}
+                        </a>
+                    </td>
+                    
+                    <td>{{ s.student_id }}</td>
+                    <td><span class="role-tag" style="background: #e67e22; color: #fff;">{{ s.level }}</span></td>
+                    <td>{{ s.study_type }}</td>
+                    <td style="color: var(--primary-color); font-weight: bold;">{{ s.avg or '---' }}</td>
+                    <td>{{ s.admission_type or '---' }}</td>
+                    
+                    <td class="actions-cell" style="vertical-align: middle;">
+                        <div style="display: flex; gap: 5px; justify-content: center; flex-wrap: wrap;">
+                            
+                            <a href="{{ url_for('admin_student_full_edit', student_id=s.id) }}" 
+                               class="action-btn full-edit-link" 
+                               style="font-size: 0.8rem; padding: 5px 8px; white-space: nowrap;">تعديل بيانات</a>
+
+                            <a href="{{ url_for('admin_student_edit', student_id=s.id) }}" 
+                               class="action-btn edit-link" 
+                               style="font-size: 0.8rem; padding: 5px 8px; white-space: nowrap;">تعديل درجات</a>
+
+                            <a href="{{ url_for('admin_student_print', student_id=s.id) }}" 
+                               class="action-btn print-link" target="_blank"
+                               style="font-size: 0.8rem; padding: 5px 8px; white-space: nowrap;">طباعة</a>
+
+                            <form action="{{ url_for('admin_student_delete', student_id=s.id) }}" method="POST" 
+                                  style="display: inline-block; margin: 0;" onsubmit="return confirm('هل أنت متأكد من حذف سجل الطالب بالكامل؟');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="action-btn delete-link" 
+                                        style="background-color: #e74c3c; color: white; font-size: 0.8rem; padding: 5px 8px; white-space: nowrap; border:none; cursor:pointer; border-radius:4px;">
+                                    حذف
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="no-data-row">لا يوجد طلاب مطابقين للبحث.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="btn-box" style="margin-top: 20px; justify-content: flex-end; gap: 15px;">
+        <a href="{{ url_for('admin_export_csv') }}" class="next-btn" style="background: #27ae60; color: #fff;">تصدير Excel</a>
+        <a href="{{ url_for('dashboard') }}" class="back-btn">عودة للوحة التحكم</a>
+    </div>
+</section>
+
+{% endblock %}

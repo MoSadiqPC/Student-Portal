@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="card dashboard-card">
+    <div class="welcome-box">
+        <div class="welcome-text">
+            <h2 class="glow-title">مرحباً بك، {{ user.username }}</h2>
+            <p style="color: #9affd8;">أنت الآن في لوحة التحكم الخاصة بالنظام. يمكنك مراجعة الإحصائيات أو إدارة الطلاب.</p>
+        </div>
+    </div>
+
+    <h3 class="section-heading" style="margin-top: 30px;">إحصائيات الطلاب الحالية (اضغط للعرض)</h3>
+    
+    <div class="stats-grid">
+        
+        <a href="{{ url_for('admin_students_list') }}" style="text-decoration: none;">
+            <div class="stat-box box-total">
+                <h3 class="stat-number">{{ stats.total }}</h3>
+                <p class="stat-label">إجمالي الطلاب</p>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('admin_students_list', level='ماجستير') }}" style="text-decoration: none;">
+            <div class="stat-box box-master">
+                <h3 class="stat-number">{{ stats.master }}</h3>
+                <p class="stat-label">طلاب الماجستير</p>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('admin_students_list', level='دكتوراه') }}" style="text-decoration: none;">
+            <div class="stat-box box-phd">
+                <h3 class="stat-number">{{ stats.phd }}</h3>
+                <p class="stat-label">طلاب الدكتوراه</p>
+            </div>
+        </a>
+
+        <a href="{{ url_for('admin_students_list', study_type='صباحي') }}" style="text-decoration: none;">
+            <div class="stat-box box-morning">
+                <h3 class="stat-number">{{ stats.morning }}</h3>
+                <p class="stat-label">دراسة صباحية</p>
+            </div>
+        </a>
+
+        <a href="{{ url_for('admin_students_list', study_type='مسائي') }}" style="text-decoration: none;">
+            <div class="stat-box box-evening">
+                <h3 class="stat-number">{{ stats.evening }}</h3>
+                <p class="stat-label">دراسة مسائية</p>
+            </div>
+        </a>
+    </div>
+
+    <div class="btn-box form-actions" style="justify-content: center; margin-top: 40px; gap: 20px;">
+        <a class="btn-start next-btn" href="{{ url_for('admin_students_list') }}">عرض القائمة الكاملة</a>
+        <a class="btn-preview back-btn" href="{{ url_for('admin_students_list') }}">إدارة ومراجعة الطلاب</a>
+    </div>
+
+</section>
+
+{% endblock %}

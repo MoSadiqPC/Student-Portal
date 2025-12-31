@@ -1,0 +1,38 @@
+<div class="steps-container">
+    <div class="progress-line"></div>
+    
+    <a href="{{ url_for('info') }}" class="step-item {% if request.endpoint == 'info' %}active{% endif %}">
+        <div class="step-icon">1</div>
+        <span class="step-label">معلومات</span>
+    </a>
+
+    <a href="{{ url_for('admission') }}" class="step-item {% if request.endpoint == 'admission' %}active{% endif %}">
+        <div class="step-icon">2</div>
+        <span class="step-label">قبول</span>
+    </a>
+
+    <a href="{{ url_for('courses') }}" class="step-item {% if request.endpoint == 'courses' %}active{% endif %}">
+        <div class="step-icon">3</div>
+        <span class="step-label">مواد</span>
+    </a>
+
+    <a href="{{ url_for('research') }}" class="step-item {% if request.endpoint == 'research' %}active{% endif %}">
+        <div class="step-icon">4</div>
+        <span class="step-label">بحث</span>
+    </a>
+
+    <a href="{{ url_for('competency') }}" class="step-item {% if request.endpoint == 'competency' %}active{% endif %}">
+        <div class="step-icon">5</div>
+        <span class="step-label">كفاءة</span>
+    </a>
+
+    <a href="{{ url_for('plan') }}" class="step-item {% if request.endpoint == 'plan' %}active{% endif %}">
+        <div class="step-icon">6</div>
+        <span class="step-label">لجان</span>
+    </a>
+
+    <a href="{{ url_for('review') }}" class="step-item {% if request.endpoint == 'review' %}active{% endif %}">
+        <div class="step-icon">✅</div>
+        <span class="step-label">مراجعة</span>
+    </a>
+</div>
